@@ -25,7 +25,7 @@ class MobileController(SingletonConfigurable):
        
     @traitlets.observe('speed')
     def _observe_speed(self, change):
-        self.speed = change['new'] 
+        self.speed = self._input_disc(change['new'])
         self.controll()
         self.robot.set_motors(self.left_v, self.right_v)
     
@@ -36,11 +36,26 @@ class MobileController(SingletonConfigurable):
         self.robot.set_motors(self.left_v, self.right_v)
     
     def set_control(self, speed, steering):
-        self.speed = speed
+        self.speed = self._input_disc(speed)
         self.radius = steering
         self.controll()
         self.robot.set_motors(self.left_v, self.right_v)
-        
+    
+    def _input_disc(self, input):
+
+        negative = -1.0 if input < 0e-10 else 1.0
+        input = abs(input)
+        if 0.01 < input <= 0.3:
+            return negative * 0.3
+        elif 0.3 < input <= 0.5:
+            return negative * 0.5
+        elif 0.5 < input <= 0.7:
+            return negative * 0.7
+        elif 0.7 < input <= 1.0:
+            return negative * 1.0
+        else:
+            return 0.0
+    
     def controll(self):
 
         if self.radius < 0.0:
